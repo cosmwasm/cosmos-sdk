@@ -307,9 +307,6 @@ func ContentFromProposalType(title, desc, ty string) Content {
 	case ProposalTypeText:
 		return NewTextProposal(title, desc)
 
-	case ProposalTypeSoftwareUpgrade:
-		return NewSoftwareUpgradeProposal(title, desc)
-
 	default:
 		return nil
 	}
@@ -330,7 +327,7 @@ func IsValidProposalType(ty string) bool {
 // performs a no-op.
 func ProposalHandler(_ sdk.Context, c Content) sdk.Error {
 	switch c.ProposalType() {
-	case ProposalTypeText, ProposalTypeSoftwareUpgrade:
+	case ProposalTypeText:
 		// both proposal types do not change state so this performs a no-op
 		return nil
 

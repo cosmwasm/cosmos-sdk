@@ -8,3 +8,10 @@ import (
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(Plan{}, "upgrade/Plan", nil)
 }
+
+// module codec
+var moduleCdc = codec.New()
+
+func init() {
+	RegisterCodec(moduleCdc)
+}
