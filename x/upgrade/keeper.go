@@ -2,6 +2,7 @@ package upgrade
 
 import (
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -57,7 +58,7 @@ const (
 )
 
 // NewKeeper constructs an upgrade keeper
-func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec) Keeper {
+func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey) Keeper {
 	return &keeper{
 		storeKey:        storeKey,
 		cdc:             cdc,

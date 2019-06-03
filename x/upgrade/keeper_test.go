@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
-	dbm "github.com/tendermint/tendermint/libs/db"
+	dbm "github.com/tendermint/tm-db"
 	"github.com/tendermint/tendermint/libs/log"
 	"testing"
 	"time"
@@ -25,7 +25,7 @@ func (s *TestSuite) SetupTest() {
 	key := sdk.NewKVStoreKey("upgrade")
 	cdc := codec.New()
 	RegisterCodec(cdc)
-	s.keeper = NewKeeper(key, cdc)
+	s.keeper = NewKeeper(cdc, key)
 	s.cms.MountStoreWithDB(key, sdk.StoreTypeIAVL, db)
 	_ = s.cms.LoadLatestVersion()
 	s.ctx = sdk.NewContext(s.cms, abci.Header{Height: 10, Time: time.Now()}, false, log.NewNopLogger())

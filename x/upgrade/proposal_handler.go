@@ -7,11 +7,17 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
-func NewParamChangeProposalHandler(k Keeper) govtypes.Handler {
+const (
+	RouterKey = ModuleName
+)
+
+func NewSoftwareUpgradeProposalHandler(k Keeper) govtypes.Handler {
 	return func(ctx sdk.Context, content govtypes.Content) sdk.Error {
 		switch c := content.(type) {
-		case govtypes.SoftwareUpgradeProposal:
+		case SoftwareUpgradeProposal:
 			return handleSoftwareUpgradeProposal(ctx, k, c)
+		case CancelSoftwareUpgradeProposal:
+			return handleCancelSoftwareUpgradeProposal(ctx, k, c)
 
 		default:
 			errMsg := fmt.Sprintf("unrecognized software upgrade proposal content type: %T", c)
@@ -20,6 +26,11 @@ func NewParamChangeProposalHandler(k Keeper) govtypes.Handler {
 	}
 }
 
-func handleSoftwareUpgradeProposal(ctx sdk.Context, k Keeper, p govtypes.SoftwareUpgradeProposal) sdk.Error {
+func handleSoftwareUpgradeProposal(ctx sdk.Context, k Keeper, p SoftwareUpgradeProposal) sdk.Error {
 	return k.ScheduleUpgrade(ctx, p.Plan)
+}
+
+func handleCancelSoftwareUpgradeProposal(ctx sdk.Context, k Keeper, p CancelSoftwareUpgradeProposal) sdk.Error {
+	k.ClearUpgradePlan(ctx)
+	return nil
 }

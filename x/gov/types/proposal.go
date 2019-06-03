@@ -287,8 +287,7 @@ func (sup SoftwareUpgradeProposal) String() string {
 }
 
 var validProposalTypes = map[string]struct{}{
-	ProposalTypeText:            {},
-	ProposalTypeSoftwareUpgrade: {},
+	ProposalTypeText: {},
 }
 
 // RegisterProposalType registers a proposal type. It will panic if the type is

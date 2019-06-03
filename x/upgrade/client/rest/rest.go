@@ -2,12 +2,13 @@ package rest
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 // RegisterRoutes registers REST routes for the upgrade module under the path specified by routeName.
@@ -17,7 +18,7 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *codec.Codec, 
 
 func getUpgradePlanHandler(cdc *codec.Codec, cliCtx context.CLIContext, storeName string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, request *http.Request) {
-		res, err := cliCtx.QueryStore([]byte(upgrade.PlanKey), storeName)
+		res, _, err := cliCtx.QueryStore([]byte(upgrade.PlanKey), storeName)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -35,6 +36,6 @@ func getUpgradePlanHandler(cdc *codec.Codec, cliCtx context.CLIContext, storeNam
 			return
 		}
 
-		rest.PostProcessResponse(w, cdc, plan, cliCtx.Indent)
+		rest.PostProcessResponse(w, cliCtx, plan)
 	}
 }

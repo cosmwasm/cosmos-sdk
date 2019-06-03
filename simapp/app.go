@@ -4,6 +4,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/cosmos/cosmos-sdk/x/upgrade"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
@@ -56,6 +58,7 @@ var (
 		slashing.AppModuleBasic{},
 		nft.AppModuleBasic{},
 		supply.AppModuleBasic{},
+		upgrade.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -103,6 +106,7 @@ type SimApp struct {
 	CrisisKeeper   crisis.Keeper
 	ParamsKeeper   params.Keeper
 	NFTKeeper      nft.Keeper
+	UpgradeKeeper  upgrade.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -125,7 +129,7 @@ func NewSimApp(
 
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
 		supply.StoreKey, mint.StoreKey, distr.StoreKey, slashing.StoreKey,
-		gov.StoreKey, params.StoreKey, nft.StoreKey)
+		gov.StoreKey, params.StoreKey, nft.StoreKey, upgrade.StoreKey)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
 	app := &SimApp{
@@ -159,6 +163,7 @@ func NewSimApp(
 	app.SlashingKeeper = slashing.NewKeeper(app.cdc, keys[slashing.StoreKey], &stakingKeeper,
 		slashingSubspace, slashing.DefaultCodespace)
 	app.CrisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.SupplyKeeper, auth.FeeCollectorName)
+	app.UpgradeKeeper = upgrade.NewKeeper(app.cdc, keys[upgrade.StoreKey])
 	app.NFTKeeper = nft.NewKeeper(app.cdc, keys[nft.StoreKey])
 
 	// register the proposal types
@@ -190,6 +195,7 @@ func NewSimApp(
 		slashing.NewAppModule(app.SlashingKeeper, app.StakingKeeper),
 		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		nft.NewAppModule(app.NFTKeeper),
+		upgrade.NewAppModule(app.UpgradeKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that

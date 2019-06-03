@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
@@ -17,7 +18,7 @@ func GetPlanCmd(storeName string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res, err := cliCtx.QueryStore([]byte(upgrade.PlanKey), storeName)
+			res, _, err := cliCtx.QueryStore([]byte(upgrade.PlanKey), storeName)
 			if err != nil {
 				return err
 			}
@@ -47,7 +48,7 @@ func GetAppliedHeightCmd(storeName string, cdc *codec.Codec) *cobra.Command {
 
 			name := args[0]
 
-			res, err := cliCtx.QueryStore(upgrade.DoneHeightKey(name), storeName)
+			res, _, err := cliCtx.QueryStore(upgrade.DoneHeightKey(name), storeName)
 			if err != nil {
 				return err
 			}
