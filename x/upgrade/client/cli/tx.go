@@ -20,7 +20,7 @@ import (
 // GetCmdSubmitProposal implements a command handler for submitting a software upgrade proposal transaction.
 func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "software-upgrade --name [name] (--height [height] | --time [time]) (--info [info])",
+		Use:   "software-upgrade --upgrade-name [name] (--upgrade-height [height] | --upgrade-time [time]) (--upgrade-info [info])",
 		Args:  cobra.ExactArgs(0),
 		Short: "Submit a software upgrade proposal",
 		Long: strings.TrimSpace(
@@ -56,7 +56,7 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			name, err := cmd.Flags().GetString("name")
+			name, err := cmd.Flags().GetString("upgrade-name")
 			if err != nil {
 				return err
 			}
@@ -64,19 +64,19 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 				name = title
 			}
 
-			height, err := cmd.Flags().GetInt64("height")
+			height, err := cmd.Flags().GetInt64("upgrade-height")
 			if err != nil {
 				return err
 			}
 
-			timeStr, err := cmd.Flags().GetString("time")
+			timeStr, err := cmd.Flags().GetString("upgrade-time")
 			if err != nil {
 				return err
 			}
 
 			if height != 0 {
 				if len(timeStr) != 0 {
-					return fmt.Errorf("only one of --time or --height should be specified")
+					return fmt.Errorf("only one of --upgrade-time or --upgrade-height should be specified")
 				}
 			}
 
@@ -88,7 +88,7 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 				}
 			}
 
-			info, err := cmd.Flags().GetString("info")
+			info, err := cmd.Flags().GetString("upgrade-info")
 			if err != nil {
 				return err
 			}
@@ -108,10 +108,10 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().String(cli.FlagTitle, "", "title of proposal")
 	cmd.Flags().String(cli.FlagDescription, "", "description of proposal")
 	cmd.Flags().String(cli.FlagDeposit, "", "deposit of proposal")
-	cmd.Flags().String("name", "", "The name of the upgrade (if not specified title will be used)")
-	cmd.Flags().Int64("height", 0, "The height at which the upgrade must happen (not to be used together with --time)")
-	cmd.Flags().String("time", "", "The time at which the upgrade must happen (not to be used together with --height)")
-	cmd.Flags().String("info", "", "Optional info for the planned upgrade such as commit hash, etc.")
+	cmd.Flags().String("upgrade-name", "", "The name of the upgrade (if not specified title will be used)")
+	cmd.Flags().Int64("upgrade-height", 0, "The height at which the upgrade must happen (not to be used together with --upgrade-time)")
+	cmd.Flags().String("upgrade-time", "", "The time at which the upgrade must happen (not to be used together with --upgrade-height)")
+	cmd.Flags().String("upgrade-info", "", "Optional info for the planned upgrade such as commit hash, etc.")
 
 	return cmd
 }
