@@ -19,8 +19,8 @@ import (
 // GetCmdSubmitProposal implements a command handler for submitting a software upgrade proposal transaction.
 func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "software-upgrade ",
-		Args:  cobra.ExactArgs(1),
+		Use:   "software-upgrade --name [name] (--height [height] | --time [time]) (--info [info])",
+		Args:  cobra.ExactArgs(0),
 		Short: "Submit a software upgrade proposal",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Submit a software upgrade along with an initial deposit.
