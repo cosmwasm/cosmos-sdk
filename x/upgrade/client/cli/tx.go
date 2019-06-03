@@ -104,6 +104,8 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 
+	cmd.Flags().String("title", "", "The title of the proposal")
+	cmd.Flags().String("description", "", "The title of the proposal")
 	cmd.Flags().String("name", "", "The name of the upgrade (if not specified title will be used)")
 	cmd.Flags().Int64("height", 0, "The height at which the upgrade must happen (not to be used together with --time)")
 	cmd.Flags().String("time", "", "The time at which the upgrade must happen (not to be used together with --height)")
