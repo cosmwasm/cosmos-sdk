@@ -5,7 +5,12 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/spf13/viper"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/cli"
+	"os"
+	"os/exec"
+	"path/filepath"
 )
 
 // Keeper of the upgrade module
@@ -145,9 +150,10 @@ func (keeper *keeper) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) 
 		keeper.plan = plan
 		keeper.haveCache = true
 		if found {
-			willUpgrader := keeper.willUpgrader
-			if willUpgrader != nil {
-				willUpgrader(ctx, keeper.plan)
+			if keeper.willUpgrader != nil {
+				keeper.willUpgrader(ctx, keeper.plan)
+			} else {
+				DefaultWillUpgrader(ctx, keeper.plan)
 			}
 		}
 	}
@@ -172,11 +178,64 @@ func (keeper *keeper) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) 
 		} else {
 			// We don't have an upgrade handler for this upgrade name, meaning this software is out of date so shutdown
 			ctx.Logger().Error(fmt.Sprintf("UPGRADE \"%s\" NEEDED at height %d: %s", keeper.plan.Name, blockHeight, keeper.plan.Info))
-			onUpgrader := keeper.onUpgrader
-			if onUpgrader != nil {
-				onUpgrader(ctx, keeper.plan)
+			if keeper.onUpgrader != nil {
+				keeper.onUpgrader(ctx, keeper.plan)
+			} else {
+				DefaultOnUpgrader(ctx, keeper.plan)
 			}
 			panic("UPGRADE REQUIRED!")
 		}
 	}
+}
+
+func DefaultWillUpgrader(ctx sdk.Context, plan Plan) {
+	CallUpgradeScript(ctx, plan, "prepare-upgrade")
+}
+
+func DefaultOnUpgrader(ctx sdk.Context, plan Plan) {
+	CallUpgradeScript(ctx, plan, "do-upgrade")
+}
+
+func CallUpgradeScript(ctx sdk.Context, plan Plan, script string) {
+	go func() {
+		home := viper.GetString(cli.HomeFlag)
+		file := filepath.Join(home, "config", script)
+		ctx.Logger().Info(fmt.Sprintf("Looking for upgrade script %s", file))
+		if _, err := os.Stat(file); err == nil {
+			ctx.Logger().Info(fmt.Sprintf("Applying upgrade script %s", file))
+			err = os.Setenv("COSMOS_HOME", home)
+			if err != nil {
+				ctx.Logger().Error("Error setting env var COSMOS_HOME", err)
+			}
+			if len(plan.Info) != 0 {
+				err = os.Setenv("UPGRADE_INFO", plan.Info)
+				if err != nil {
+					ctx.Logger().Error("Error setting env var UPGRADE_INFO", err)
+				}
+			}
+			cmd := exec.Command(file)
+			cmd.Stdout = logWriter{ctx, script, false}
+			cmd.Stderr = logWriter{ctx, script, false}
+			err = cmd.Start()
+			if err != nil {
+				ctx.Logger().Info(fmt.Sprintf("Error starting script %s", file), err)
+			}
+		}
+	}()
+}
+
+type logWriter struct {
+	sdk.Context
+	script string
+	err    bool
+}
+
+func (w logWriter) Write(p []byte) (n int, err error) {
+	s := fmt.Sprintf("script %s: %s", w.script, p)
+	if w.err {
+		w.Logger().Error(s)
+	} else {
+		w.Logger().Info(s)
+	}
+	return len(p), nil
 }
