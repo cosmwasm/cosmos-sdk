@@ -195,20 +195,23 @@ func (keeper *keeper) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) 
 }
 
 
-// DefaultWillUpgrader asynchronously runs a script called prepare-upgrade from $HOME/config if such a script exists,
+// DefaultWillUpgrader asynchronously runs a script called prepare-upgrade from $COSMOS_HOME/config if such a script exists,
 // with plan serialized to JSON as the first argument and the current block height as the second argument.
+// The environment variable $COSMOS_HOME will be set to the home directory of the daemon.
 func DefaultWillUpgrader(ctx sdk.Context, plan Plan) {
 	CallUpgradeScript(ctx, plan, "prepare-upgrade", true)
 }
 
-// DefaultOnUpgrader synchronously runs a script called do-upgrade from $HOME/config if such a script exists,
+// DefaultOnUpgrader synchronously runs a script called do-upgrade from $COSMOS_HOME/config if such a script exists,
 // with plan serialized to JSON as the first argument and the current block height as the second argument.
+// The environment variable $COSMOS_HOME will be set to the home directory of the daemon.
 func DefaultOnUpgrader(ctx sdk.Context, plan Plan) {
 	CallUpgradeScript(ctx, plan, "do-upgrade", false)
 }
 
-// CallUpgradeScript runs a script called script from $HOME/config if such a script exists,
+// CallUpgradeScript runs a script called script from $COSMOS_HOME/config if such a script exists,
 // with plan serialized to JSON as the first argument and the current block height as the second argument.
+// The environment variable $COSMOS_HOME will be set to the home directory of the daemon.
 // If async is true, the command will be run in a separate go-routine.
 func CallUpgradeScript(ctx sdk.Context, plan Plan, script string, async bool) {
 	f := func() {
