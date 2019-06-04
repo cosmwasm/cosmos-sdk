@@ -55,5 +55,7 @@ will be called in the BeginBlocker at the block where an upgrade is needed right
 The will upgrade callback can be used to notify some external process that an upgrade is needed so that it can
 prepare binaries, etc. The on upgrade callback can notify some external process to actually begin the upgrade process.
 
+BUG(aaronc): will upgrade callbacks are temporarily disabled
+
 */
 package upgrade
