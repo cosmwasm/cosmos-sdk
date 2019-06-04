@@ -1,6 +1,7 @@
 package upgrade
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -144,17 +145,15 @@ func (keeper *keeper) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) 
 	blockTime := ctx.BlockHeader().Time
 	blockHeight := ctx.BlockHeight()
 
+	justRetrievedFromCache := false
+
 	if !keeper.haveCache {
 		plan, found := keeper.GetUpgradePlan(ctx)
 		keeper.haveCachedPlan = found
 		keeper.plan = plan
 		keeper.haveCache = true
 		if found {
-			if keeper.willUpgrader != nil {
-				keeper.willUpgrader(ctx, keeper.plan)
-			} else {
-				DefaultWillUpgrader(ctx, keeper.plan)
-			}
+			justRetrievedFromCache = true
 		}
 	}
 
@@ -185,19 +184,34 @@ func (keeper *keeper) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) 
 			}
 			panic("UPGRADE REQUIRED!")
 		}
+	} else if justRetrievedFromCache {
+		// In this case we are notifying the system that an upgrade is planned but not scheduled to happen yet
+		if keeper.willUpgrader != nil {
+			keeper.willUpgrader(ctx, keeper.plan)
+		} else {
+			DefaultWillUpgrader(ctx, keeper.plan)
+		}
 	}
 }
 
+
+// DefaultWillUpgrader asynchronously runs a script called prepare-upgrade from $HOME/config if such a script exists,
+// with plan serialized to JSON as the first argument and the current block height as the second argument.
 func DefaultWillUpgrader(ctx sdk.Context, plan Plan) {
-	CallUpgradeScript(ctx, plan, "prepare-upgrade")
+	CallUpgradeScript(ctx, plan, "prepare-upgrade", true)
 }
 
+// DefaultOnUpgrader synchronously runs a script called do-upgrade from $HOME/config if such a script exists,
+// with plan serialized to JSON as the first argument and the current block height as the second argument.
 func DefaultOnUpgrader(ctx sdk.Context, plan Plan) {
-	CallUpgradeScript(ctx, plan, "do-upgrade")
+	CallUpgradeScript(ctx, plan, "do-upgrade", false)
 }
 
-func CallUpgradeScript(ctx sdk.Context, plan Plan, script string) {
-	go func() {
+// CallUpgradeScript runs a script called script from $HOME/config if such a script exists,
+// with plan serialized to JSON as the first argument and the current block height as the second argument.
+// If async is true, the command will be run in a separate go-routine.
+func CallUpgradeScript(ctx sdk.Context, plan Plan, script string, async bool) {
+	f := func() {
 		home := viper.GetString(cli.HomeFlag)
 		file := filepath.Join(home, "config", script)
 		ctx.Logger().Info(fmt.Sprintf("Looking for upgrade script %s", file))
@@ -205,23 +219,28 @@ func CallUpgradeScript(ctx sdk.Context, plan Plan, script string) {
 			ctx.Logger().Info(fmt.Sprintf("Applying upgrade script %s", file))
 			err = os.Setenv("COSMOS_HOME", home)
 			if err != nil {
-				ctx.Logger().Error("Error setting env var COSMOS_HOME", err)
+				ctx.Logger().Error(fmt.Sprintf("Error setting env var COSMOS_HOME: %v", err))
 			}
-			if len(plan.Info) != 0 {
-				err = os.Setenv("UPGRADE_INFO", plan.Info)
-				if err != nil {
-					ctx.Logger().Error("Error setting env var UPGRADE_INFO", err)
-				}
+
+
+			planJson, err := json.Marshal(plan)
+			if err != nil {
+				ctx.Logger().Error(fmt.Sprintf("Error marshaling upgrade plan to JSON: %v", err))
 			}
-			cmd := exec.Command(file)
+			cmd := exec.Command(file, string(planJson), fmt.Sprintf("%d", ctx.BlockHeight()))
 			cmd.Stdout = logWriter{ctx, script, false}
 			cmd.Stderr = logWriter{ctx, script, false}
-			err = cmd.Start()
+			err = cmd.Run()
 			if err != nil {
-				ctx.Logger().Info(fmt.Sprintf("Error starting script %s", file), err)
+				ctx.Logger().Error(fmt.Sprintf("Error running script %s: %v", file, err))
 			}
 		}
-	}()
+	}
+	if async {
+		go f()
+	} else {
+		f()
+	}
 }
 
 type logWriter struct {
