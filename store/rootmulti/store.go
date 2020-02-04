@@ -309,7 +309,6 @@ func (rs *Store) Commit() types.CommitID {
 	commitInfo := commitStores(version, rs.stores)
 
 	if rs.pruningOpts.WillFlush(version) {
-		fmt.Printf("*** Flushing commit info at height %d ***\n", version)
 		// Need to update atomically.
 		batch := rs.db.NewBatch()
 		defer batch.Close()
