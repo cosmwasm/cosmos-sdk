@@ -1,3 +1,20 @@
+/*
+Improvement: Add SetDebug Option
+Copyright (C) 2020 Ethan Frey
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 package baseapp
 
 import (
@@ -42,6 +59,11 @@ func SetHaltTime(haltTime uint64) func(*BaseApp) {
 // inter-block cache.
 func SetInterBlockCache(cache sdk.MultiStorePersistentCache) func(*BaseApp) {
 	return func(app *BaseApp) { app.setInterBlockCache(cache) }
+}
+
+// SetDebug will turn on or off debug flag
+func SetDebug(debug bool) func(*BaseApp) {
+	return func(app *BaseApp) { app.setDebug(debug) }
 }
 
 func (app *BaseApp) SetName(name string) {
