@@ -1,3 +1,20 @@
+/*
+Bugfixes: don't panic on invalid message in CheckTx
+Copyright (C) 2020 Ethan Frey
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 package baseapp
 
 import (
@@ -581,7 +598,9 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 
 	msgs := tx.GetMsgs()
 	if err := validateBasicTxMsgs(msgs); err != nil {
-		gInfo = sdk.GasInfo{GasUsed: ctx.BlockGasMeter().GasConsumed()}
+		if mode == runTxModeDeliver {
+			gInfo = sdk.GasInfo{GasUsed: ctx.BlockGasMeter().GasConsumed()}
+		}
 		return gInfo, nil, err
 	}
 
