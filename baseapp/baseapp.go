@@ -1,5 +1,6 @@
 /*
-Bugfixes: don't panic on invalid message in CheckTx
+Bugfix: don't panic on invalid message in CheckTx
+Improvement: Add Debug flag
 Copyright (C) 2020 Ethan Frey
 
 This program is free software: you can redistribute it and/or modify

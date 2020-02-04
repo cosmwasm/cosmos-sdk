@@ -1,3 +1,20 @@
+/*
+Add debug flag to Response{Check,Deliver}Tx
+Copyright (C) 2020 Ethan Frey
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 package errors
 
 import (
@@ -44,8 +61,8 @@ func ABCIInfo(err error, debug bool) (codespace string, code uint32, log string)
 
 // ResponseCheckTx returns an ABCI ResponseCheckTx object with fields filled in
 // from the given error and gas values.
-func ResponseCheckTx(err error, gw, gu uint64) abci.ResponseCheckTx {
-	space, code, log := ABCIInfo(err, false)
+func ResponseCheckTx(err error, gw, gu uint64, debug bool) abci.ResponseCheckTx {
+	space, code, log := ABCIInfo(err, debug)
 	return abci.ResponseCheckTx{
 		Codespace: space,
 		Code:      code,
@@ -57,8 +74,8 @@ func ResponseCheckTx(err error, gw, gu uint64) abci.ResponseCheckTx {
 
 // ResponseDeliverTx returns an ABCI ResponseDeliverTx object with fields filled in
 // from the given error and gas values.
-func ResponseDeliverTx(err error, gw, gu uint64) abci.ResponseDeliverTx {
-	space, code, log := ABCIInfo(err, false)
+func ResponseDeliverTx(err error, gw, gu uint64, debug bool) abci.ResponseDeliverTx {
+	space, code, log := ABCIInfo(err, debug)
 	return abci.ResponseDeliverTx{
 		Codespace: space,
 		Code:      code,
