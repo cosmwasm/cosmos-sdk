@@ -24,13 +24,6 @@ type PruningOptions struct {
 	keepEvery  int64
 }
 
-func NewPruningOptions(keepRecent, keepEvery int64) PruningOptions {
-	return PruningOptions{
-		keepRecent: keepRecent,
-		keepEvery:  keepEvery,
-	}
-}
-
 // How much recent state will be kept. Older state will be deleted.
 func (po PruningOptions) KeepRecent() int64 {
 	return po.keepRecent
@@ -43,16 +36,19 @@ func (po PruningOptions) KeepEvery() int64 {
 
 // WillFlush returns true if this height is writen to disk
 func (po PruningOptions) WillFlush(height int64) bool {
-	return height%po.keepEvery == 0
+	return po.keepEvery != 0 && height%po.keepEvery == 0
 }
 
 // default pruning strategies
 var (
 	// PruneEverything means all saved states will be deleted, storing only the current state
-	PruneEverything = NewPruningOptions(1, 1)
+	// TODO: where was this pruned again??? I think this needs to be in iavl
+	//  -> now this is just a memdb of last 100 blocks, nothing ever persisted!
+	PruneEverything = PruningOptions{keepEvery: 0, keepRecent: 100}
 	// PruneNothing means all historic states will be saved, nothing will be deleted
-	PruneNothing = NewPruningOptions(0, 1)
+	PruneNothing = PruningOptions{keepEvery: 1, keepRecent: 1}
 	// PruneSyncable means only those states not needed for state syncing will be deleted (keeps last 100 + every 10000th)
 	// TODO: update, only write every 10 for now
-	PruneSyncable = NewPruningOptions(10, 10)
+	// keep last 100 in memory so we can query anything since the snapshot
+	PruneSyncable = PruningOptions{keepEvery: 20, keepRecent: 40}
 )
