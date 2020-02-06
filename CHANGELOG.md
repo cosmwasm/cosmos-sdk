@@ -37,6 +37,24 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+### API Breaking Changes
+
+* (types) [\#5579](https://github.com/cosmos/cosmos-sdk/pull/5579) The `keepRecent` field has been removed from the `PruningOptions` type.
+The `PruningOptions` type now only includes fields `KeepEvery` and `SnapshotEvery`, where `KeepEvery`
+determines which committed heights are flushed to disk and `SnapshotEvery` determines which of these
+heights are kept after pruning. The `IsValid` method should be called whenever using these options. Methods
+`SnapshotVersion` and `FlushVersion` accept a version arugment and determine if the version should be
+flushed to disk or kept as a snapshot. Note, `KeepRecent` is automatically inferred from the options
+and provided directly the IAVL store.
+
+### Bug Fixes
+
+* (types) [\#5579](https://github.com/cosmos/cosmos-sdk/pull/5579) The IAVL `Store#Commit` method has been refactored to
+delete a flushed version if it is not a snapshot version. The root multi-store now keeps track of `commitInfo` instead
+of `types.CommitID`. During `Commit` of the root multi-store, `lastCommitInfo` is updated from the saved state
+and is only flushed to disk if it is a snapshot version. During `Query` of the root multi-store, if the request height
+is the latest height, we'll use the store's `lastCommitInfo`. Otherwise, we fetch `commitInfo` from disk.
+
 ## [v0.38.0] - 2020-01-23
 
 ### State Machine Breaking
