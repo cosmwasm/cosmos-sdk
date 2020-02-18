@@ -73,7 +73,10 @@ func (rs *RestServer) Start(listenAddr string, maxOpen int, readTimeout, writeTi
 
 	var h http.Handler = rs.Mux
 	if cors {
-		h = handlers.CORS()(h)
+		h = handlers.CORS(
+			handlers.AllowedHeaders([]string{"Content-Type"}),
+			handlers.AllowedOrigins([]string{"*"}),
+		)(h)
 	}
 
 	return rpcserver.StartHTTPServer(rs.listener, h, rs.log, cfg)
