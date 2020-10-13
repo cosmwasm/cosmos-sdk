@@ -387,6 +387,7 @@ func Sign(txf Factory, name string, txBuilder client.TxBuilder) error {
 		// use the SignModeHandler's default mode if unspecified
 		signMode = txf.txConfig.SignModeHandler().DefaultMode()
 	}
+	fmt.Printf("Sign Mode: %s\n\n", signMode)
 
 	key, err := txf.keybase.Key(name)
 	if err != nil {
@@ -426,12 +427,14 @@ func Sign(txf Factory, name string, txBuilder client.TxBuilder) error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Sign Bytes: %x\n\n", signBytes)
 
 	// Sign those bytes
 	sigBytes, _, err := txf.keybase.Sign(name, signBytes)
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Signature: %x\n\n", sigBytes)
 
 	// Construct the SignatureV2 struct
 	sigData = signing.SingleSignatureData{
