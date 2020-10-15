@@ -120,6 +120,18 @@ build-simd-all: go.sum
         --name latest-build cosmossdk/rbuilder:latest
 	docker cp -a latest-build:/home/builder/artifacts/ $(CURDIR)/
 
+build-simd-darwin: go.sum $(BUILDDIR)/
+	docker rm latest-build || true
+	docker run --volume=$(CURDIR):/sources:ro \
+		--env TARGET_PLATFORMS='darwin/amd64' \
+		--env APP=simd \
+		--env VERSION=$(VERSION) \
+		--env COMMIT=$(COMMIT) \
+		--env LEDGER_ENABLED=$(LEDGER_ENABLED) \
+		--name latest-build cosmossdk/rbuilder:latest
+	docker cp -a latest-build:/home/builder/artifacts/ $(CURDIR)/
+	cp artifacts/simd-*-darwin-amd64 $(BUILDDIR)/simd
+
 build-simd-linux: go.sum $(BUILDDIR)/
 	docker rm latest-build || true
 	docker run --volume=$(CURDIR):/sources:ro \
