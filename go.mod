@@ -51,7 +51,7 @@ require (
 	golang.org/x/net v0.0.0-20200930145003-4acb6c075d10 // indirect
 	golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f // indirect
 	google.golang.org/genproto v0.0.0-20200825200019-8632dd797987
-	google.golang.org/grpc v1.32.0
+	google.golang.org/grpc v1.33.1
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.3.0
 )
