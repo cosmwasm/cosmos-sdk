@@ -395,6 +395,7 @@ func Sign(txf Factory, name string, txBuilder client.TxBuilder, overwriteSig boo
 	if err := checkMultipleSigners(signMode, txBuilder.GetTx()); err != nil {
 		return err
 	}
+	fmt.Printf("Sign Mode: %s\n\n", signMode)
 
 	key, err := txf.keybase.Key(name)
 	if err != nil {
@@ -440,12 +441,14 @@ func Sign(txf Factory, name string, txBuilder client.TxBuilder, overwriteSig boo
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Sign Bytes: %x\n\n", bytesToSign)
 
 	// Sign those bytes
 	sigBytes, _, err := txf.keybase.Sign(name, bytesToSign)
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Signature: %x\n\n", sigBytes)
 
 	// Construct the SignatureV2 struct
 	sigData = signing.SingleSignatureData{
