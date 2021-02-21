@@ -249,6 +249,13 @@ func makeSignCmd() func(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
+		// print out the protobuf format
+		proto, err := txCfg.TxEncoder()(txBuilder.GetTx())
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Signed TX Bytes: %x\n", proto)
+
 		aminoJSON, err := f.GetBool(flagAmino)
 		if err != nil {
 			return err
