@@ -39,6 +39,9 @@ func (signModeDirectHandler) GetSignBytes(mode signingtypes.SignMode, data signi
 	bodyBz := protoTx.getBodyBytes()
 	authInfoBz := protoTx.getAuthInfoBytes()
 
+	fmt.Printf("Body bytes: %x\n\n", bodyBz)
+	fmt.Printf("Auth info bytes: %x\n\n", authInfoBz)
+
 	return DirectSignBytes(bodyBz, authInfoBz, data.ChainID, data.AccountNumber)
 }
 
